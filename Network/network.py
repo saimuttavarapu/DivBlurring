@@ -10,11 +10,16 @@ from loss_function import loss_fn
 from tqdm import tqdm
 
 class VAELightning(pl.LightningModule):
-    def __init__(self, data_mean, data_std, gaussian_noise_std=None, noise_model=None, kl_annealing = False,
+    """ The model architecture with encoder and decoder.
+    """
+    def __init__(self, method, reg_parameter,hf, data_mean, data_std,  gaussian_noise_std=None, noise_model=None,  kl_annealing = False,
                  kl_start=0, kl_annealtime=10, z_dim=64, lr=0.001, in_channels = 1, init_filters = 32, 
                  n_filters_per_depth=2, n_depth=2,kernel_size=3, stride=1, padding=1, bias=True, groups=1, 
                  num_samples=100, kl_min=1e-7):
         super(VAELightning, self).__init__()
+        self.method= method,
+        self.reg_parameter = reg_parameter,
+        self.hf = hf,
         self.data_mean = data_mean
         self.data_std = data_std
         self.gaussian_noise_std = gaussian_noise_std
@@ -97,11 +102,13 @@ class VAELightning(pl.LightningModule):
     
     def step(self, x):
 #         print("step in vaelighing")
+
         x_normalized = (x-self.data_mean) / self.data_std
         mu, logvar = self.encoder(x_normalized)
         z = self.reparameterize(mu, logvar)
         recon_normalized = self.decoder(z)
-        reconstruction_loss, kl_loss, regulariser = loss_fn(recon_normalized, x_normalized, mu, logvar, self.gaussian_noise_std, self.data_mean, self.data_std, self.noise_model)
+
+        reconstruction_loss, kl_loss, regulariser = loss_fn(self.method ,self.reg_parameter, self.hf, recon_normalized, x_normalized, mu, logvar, self.gaussian_noise_std, self.data_mean, self.data_std, self.noise_model)
         return reconstruction_loss, kl_loss, regulariser, recon_normalized, x_normalized
     
     def get_kl_weight(self):
@@ -147,11 +154,13 @@ class VAELightning(pl.LightningModule):
     def training_epoch_end(self, training_step_outputs):
 
         reco_loss = training_step_outputs[-1]['reconstruction_loss'].item()
-        kl_loss = training_step_outputs[-1]['kl_loss'].item()
-        regulariser = training_step_outputs[-1]['regulariser'].item()
-        
+        kl_loss = training_step_outputs[-1]['kl_loss'].item()      
         loss = training_step_outputs[-1]['loss'].item()
         kl_weight = training_step_outputs[-1]['kl_weight']
+        if(self.method[0] !='DivBlurring'):
+            regulariser = training_step_outputs[-1]['regulariser'].item()
+
+
         
         # RC_loss_global.append(reco_loss)
         # regulariser_global.append(regulariser)
@@ -195,12 +204,11 @@ class VAELightning(pl.LightningModule):
 
 
 class DownConv(nn.Module):
+    """Down covolutoin model for the enocder in main model.
+    """
     def __init__(self, in_channels = 1, out_channels = 32, init_filters = 32, n_filters_per_depth=2,
                  kernel_size=3, stride=1, padding=1, bias=True, groups=1):
-        """
-        A helper Module that performs either 2 or 3 convolutions and 1 MaxPool.
-        A ReLU activation follows each convolution.
-        """
+
         super(DownConv, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -232,12 +240,11 @@ class DownConv(nn.Module):
     
     
 class UpConv(nn.Module):
+    """Up covolutoin model for the decoder in main model.
+    """
     def __init__(self, in_channels = 1, out_channels = 32, init_filters = 32, n_filters_per_depth=2, 
                  kernel_size=3, stride=1, padding=1, bias=True, groups=1):
-        """
-        A helper Module that performs either 2 or 3 convolutions and 1 UpConvolution.
-        A ReLU activation follows each convolution.
-        """
+
         super(UpConv, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels

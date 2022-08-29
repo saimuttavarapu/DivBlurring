@@ -1,48 +1,42 @@
 import warnings
-
-from loss_function import convolution
 warnings.filterwarnings('ignore')
 import torch
-import os
-import urllib
-import zipfile
-from torch.distributions import normal
-import matplotlib.pyplot as plt, numpy as np, pickle
-from scipy.stats import norm
-from tifffile import imread
-import sys
-from sklearn.feature_extraction import image
-from tqdm import tqdm
-sys.path.append('../../')
-
 import numpy as np
-import time
-from glob import glob
-from tifffile import imsave
-from sklearn.cluster import MeanShift
-from matplotlib import pyplot as plt
-from IPython.display import clear_output
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
-from collections import OrderedDict
-from torch.nn import init
-import pytorch_lightning as pl
-
-import logging
 from torch.utils.data import DataLoader
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.loggers import TensorBoardLogger
+from Network import network
+from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
+import glob
+import os
 
+# DataLoader class
+class MyDataset(Dataset):
+    def __init__(self, X, y):
+        self.data = X
+        self.target = y
+        
+    def __getitem__(self, index):
+        x = self.data[index]
+        y = self.target[index]
+        
+        return x, y
+    
+    def __len__(self):
+        return len(self.data)
 
-
-import network
-
+def create_dataloaders(x_train_tensor,x_val_tensor,batch_size):
+    """Convert the data into dataloader.
+    """
+    train_dataset = MyDataset(x_train_tensor,x_train_tensor)
+    val_dataset = MyDataset(x_val_tensor,x_val_tensor)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    return train_loader,val_loader
 
 def get_split_data(x,split_fraction=0.85):
         
-    """Split the data 85% fro training anf 15% for the trianing. 
+    """Split the data 85% for training anf 15% for the validation. 
     """
     np.random.shuffle(x)
     train_images = x[:int(split_fraction*x.shape[0])]
@@ -53,7 +47,7 @@ def get_split_data(x,split_fraction=0.85):
 
 def preprocess(train_patches,val_patches):
 
-    """Conver the data into tensors to support for trianing. 
+    """Convert the data into tensors to support for trianing. 
     """
     data_mean, data_std = getMeanStdData(train_patches, val_patches)
     x_train, x_val = convertToFloat32(train_patches,val_patches)
@@ -91,17 +85,19 @@ def convertNumpyToTensor(numpy_array):
 
 
 def create_model_and_train(basedir,data_mean,data_std,gaussian_noise_std,
-                           noise_model,n_depth,max_epochs,logger,
+                           noise_model, hf,reg_parameter,method,n_depth,max_epochs,logger,
                            checkpoint_callback,train_loader,val_loader,
                            kl_annealing, weights_summary):
+    """Create instance for VAE network and fit the model.
+    """
     
-#     for filename in glob.glob(basedir+"/*"):
-#             os.remove(filename) 
+    for filename in glob.glob(basedir+"/*"):
+            os.remove(filename) 
     
-    vae = network.VAELightning(data_mean = data_mean,
+    vae = network.VAELightning(method, reg_parameter,hf= hf, data_mean = data_mean,
                                       data_std = data_std, 
                                       gaussian_noise_std = gaussian_noise_std,
-                                      noise_model = noise_model,
+                                      noise_model = noise_model,                                       
                                       n_depth=n_depth,
                                       kl_annealing = kl_annealing)
 #     print("instnce vae created")
