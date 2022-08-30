@@ -14,18 +14,19 @@ the given measured data. We propose a new approach which is able to deblur and d
 Blurring”. We detail the modelling considered and show some possible hybrid variations
 where model-based priors are combined with fully data driven models to guarantee meaningful solutions.
 
-Prior to trian the model, create the environment with following command:
 
-conda env create updDivNoising.yml
+Frist clone the repositary: `git clone https://github.com/saimuttavarapu/DivBlurring.git`.
+Prior to trian the model, create the environment with following command: `conda env create DivBlurring.yml`.
 
-Train the models by running DivBlurring_training.ipynb
+Train the models by running `DivBlurring_training.ipynb`
 
 Note: Verify the trained models are saved in respective directories.
 
-For the prediction, run the prediction.ipynb
+For the prediction, run the `prediction.ipynb`
 
 The architecture:
-![plot](https://github.com/saimuttavarapu/DivBlurring/Supporting_imgs/DivBlurring_arc.png)
+![teaserFigure]( https://github.com/saimuttavarapu/DivBlurring/blob/main/Supporting_imgs/DivBlurring_arc.png )
 
 Resutls of DivBlurring with Positivity contrainint:
-![alt text](https://github.com/saimuttavarapu/DivBlurring/Supporting_imgs/r2_DivBlurring_PCReg_1e3.png??raw=true)
+![teaserFigure](https://github.com/saimuttavarapu/DivBlurring/blob/main/Supporting_imgs/r2_DivBlurring_PCReg_1e3.png)
+
