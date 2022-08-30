@@ -25,7 +25,7 @@ Note: Verify the trained models are saved in respective directories.
 For the prediction, run the prediction.ipynb
 
 The architecture:
-![alt text](https://github.com/saimuttavarapu/DivBlurring/Supporting_imgs/DivBlurring_arc.png)
+![plot](https://github.com/saimuttavarapu/DivBlurring/Supporting_imgs/DivBlurring_arc.png)
 
 Resutls of DivBlurring with Positivity contrainint:
-![alt text](https://github.com/saimuttavarapu/DivBlurring/Supporting_imgs/r2_DivBlurring_PCReg_1e3.png)
+![alt text](https://github.com/saimuttavarapu/DivBlurring/Supporting_imgs/r2_DivBlurring_PCReg_1e3.png??raw=true)
