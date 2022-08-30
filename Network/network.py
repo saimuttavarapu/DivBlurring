@@ -46,7 +46,7 @@ class VAELightning(pl.LightningModule):
                
         self.decoder = Decoder(z_dim=self.z_dim, in_channels = self.in_channels, init_filters = self.init_filters, n_filters_per_depth=self.n_filters_per_depth, n_depth=self.n_depth, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding, bias=self.bias, groups=self.groups)
         
-        self.save_hyperparameters('data_mean',
+        self.save_hyperparameters('method','reg_parameter','hf','data_mean',
                                   'data_std',
                                   'gaussian_noise_std',
                                   'kl_annealing',
@@ -84,7 +84,7 @@ class VAELightning(pl.LightningModule):
 #         print('mu and logvar')
 #         print(mu.shape, logvar.shape)
         sample_list = []
-        for i in tqdm(range(self.num_samples),disable= not tqdm_bar):
+        for i in range(self.num_samples):
             z = self.reparameterize(mu, logvar)
             recon = self.decode(z)
             sample_list.append(recon.detach().cpu().numpy())
@@ -93,7 +93,7 @@ class VAELightning(pl.LightningModule):
     def configure_optimizers(self):
 #         print("config params in vaelighing")
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,'min',patience=30,factor=0.5,min_lr=1e-12,verbose=True)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,'min',patience=30,factor=0.5,min_lr=1e-12,verbose=False)
         return {
            'optimizer': optimizer,
            'lr_scheduler': scheduler, # Changed scheduler to lr_scheduler
