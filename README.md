@@ -16,6 +16,7 @@ where model-based priors are combined with fully data driven models to guarantee
 
 
 Frist clone the repositary: `git clone https://github.com/saimuttavarapu/DivBlurring.git`.
+
 Prior to trian the model, create the environment with following command: `conda env create DivBlurring.yml`.
 
 Train the models by running `DivBlurring_training.ipynb`
@@ -24,9 +25,11 @@ Note: Verify the trained models are saved in respective directories.
 
 For the prediction, run the `prediction.ipynb`
 
-The architecture:
+## The architecture:
+
 ![teaserFigure]( https://github.com/saimuttavarapu/DivBlurring/blob/main/Supporting_imgs/DivBlurring_arc.png )
 
-Resutls of DivBlurring with Positivity contrainint:
+## Resutls of DivBlurring with Positivity contrainint:
+
 ![teaserFigure](https://github.com/saimuttavarapu/DivBlurring/blob/main/Supporting_imgs/r2_DivBlurring_PCReg_1e3.png)
 
